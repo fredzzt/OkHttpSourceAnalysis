@@ -21,6 +21,10 @@ import java.io.IOException;
  * Observes, modifies, and potentially short-circuits requests going out and the corresponding
  * requests coming back in. Typically interceptors will be used to add, remove, or transform headers
  * on the request or response.
+ * 拦截器是okhttp中强大的流程装置，它可以用来监控log，修改请求，修改结果，甚至是对用户透明的GZIP压缩。
+ * 类似于脚本语言中的map操作。
+ * 在okhttp中，内部维护了一个Interceptors的List，通过InterceptorChain进行多次拦截修改操作。
+
  */
 public interface Interceptor {
   Response intercept(Chain chain) throws IOException;

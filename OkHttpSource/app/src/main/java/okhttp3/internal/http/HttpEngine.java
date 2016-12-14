@@ -277,6 +277,7 @@ public final class HttpEngine {
 
   /**、
    *建立网络连接，返回的是 Http2xStream 或者 Http1xStream
+   * 在connect()有非常重要的一步，它通过okio库与远程socket建立了I/O连接，为了更好的理解，我们可以把它看成管道
    * @return
    * @throws RouteException
    * @throws RequestException

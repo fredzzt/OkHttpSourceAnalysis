@@ -108,6 +108,7 @@ public final class StreamAllocation {
       boolean connectionRetryEnabled, boolean doExtensiveHealthChecks)
       throws RouteException, IOException {
     try {
+      //与远程socket建立了I/O连接
       RealConnection resultConnection = findHealthyConnection(connectTimeout, readTimeout,
           writeTimeout, connectionRetryEnabled, doExtensiveHealthChecks);
 

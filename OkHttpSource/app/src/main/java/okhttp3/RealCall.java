@@ -212,7 +212,12 @@ final class RealCall implements Call {
 
     @Override public Response proceed(Request request) throws IOException {
       // If there's another interceptor in the chain, call that.
+      //自增递归(recursive)调用Chain.process()，直到interceptors().size()中的拦截器全部调用完。
+      // 主要做了两件事：
+      //递归调用Interceptors，依次入栈对response进行处理
+      // 当全部递归出栈完成后，移交给网络模块(getResponse)
       if (index < client.interceptors().size()) {
+
         Interceptor.Chain chain = new ApplicationInterceptorChain(index + 1, request, forWebSocket);
         Interceptor interceptor = client.interceptors().get(index);
         Response interceptedResponse = interceptor.intercept(chain);
@@ -233,7 +238,12 @@ final class RealCall implements Call {
 
   /**
    * Performs the request and returns the response. May return null if this call was canceled.
-   * 请求网络，得到响应
+   * 正式的网络请求
+   *
+   * 1.在okhttp中，通过RequestLine，Requst，HttpEngine，Header等参数进行序列化操作，也就是拼装参数为socketRaw数据。
+   * 拼装方法也比较暴力，直接按照RFC协议要求的格式进行concat输出就实现了
+      2.通过sink写入write到socket连接。
+
    */
   Response getResponse(Request request, boolean forWebSocket) throws IOException {
     // Copy body metadata to the appropriate request headers.

@@ -151,7 +151,9 @@ public final class RealConnection implements Connection {
     } catch (ConnectException e) {
       throw new ConnectException("Failed to connect to " + route.socketAddress());
     }
+    //source 用于获取response
     source = Okio.buffer(Okio.source(rawSocket));
+    //sink 用于write buffer 到server
     sink = Okio.buffer(Okio.sink(rawSocket));
 
     //如果存在TLS，就根据SSL版本与证书进行安全握手

@@ -161,7 +161,9 @@ public final class Http1xStream implements HttpStream {
     sink.flush();
   }
 
-  /** Returns bytes of a request header for sending on an HTTP transport. */
+  /** Returns bytes of a request header for sending on an HTTP transport.
+   * 通过sink写入write到socket连接
+   * */
   public void writeRequest(Headers headers, String requestLine) throws IOException {
     if (state != STATE_IDLE) throw new IllegalStateException("state: " + state);
     sink.writeUtf8(requestLine).writeUtf8("\r\n");
