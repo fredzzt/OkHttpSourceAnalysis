@@ -68,7 +68,7 @@ import java.net.Socket;
  * make bookkeeping easier for the caller: releasing the allocation as soon as the terminal stream
  * has been found. But only complete the stream once its data stream has been exhausted.
  *
- * 对jdk的socket物理连接的包装，它内部有List<WeakReference<StreamAllocation>>的引用
+ * 对jdk的socket物理连接的包装，它内部有List<WeakReference<StreamAllocation>>的引用的
  */
 public interface Connection {
   /** Returns the route used by this connection. */

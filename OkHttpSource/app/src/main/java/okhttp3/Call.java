@@ -69,6 +69,7 @@ public interface Call {
 
   boolean isCanceled();
 
+  // 使用抽象工厂批量创建
   interface Factory {
     Call newCall(Request request);
   }
