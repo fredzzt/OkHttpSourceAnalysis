@@ -455,7 +455,7 @@ public final class HttpEngine {
    * <p>This method should only be used for non-empty response bodies. Response codes like "304 Not
    * Modified" can include "Content-Encoding: gzip" without a response body and we will crash if we
    * attempt to decompress the zero-byte source.
-   * 返回在{@code response}上执行gzip解压缩的新响应（如果透明gzip）
+   * 返回在{@code response}上执行gzip解压缩的新响应（如果透明gzip压缩）
    */
   private Response unzip(final Response response) throws IOException {
     if (!transparentGzip || !"gzip".equalsIgnoreCase(userResponse.header("Content-Encoding"))) {
