@@ -46,6 +46,8 @@ import okhttp3.internal.tls.OkHostnameVerifier;
  * shared they should be treated as immutable and can safely be used to concurrently open new
  * connections. If required, threads can call {@link #clone()} to make a shallow copy of the
  * OkHttpClient that can be safely modified with further configuration changes.
+ * OkHttp 底层还是socket 根据http协议封装的一套短链接请求api
+
  */
 public class OkHttpClient implements Cloneable, Call.Factory {
   private static final List<Protocol> DEFAULT_PROTOCOLS = Util.immutableList(
@@ -54,6 +56,11 @@ public class OkHttpClient implements Cloneable, Call.Factory {
   private static final List<ConnectionSpec> DEFAULT_CONNECTION_SPECS = Util.immutableList(
       ConnectionSpec.MODERN_TLS, ConnectionSpec.COMPATIBLE_TLS, ConnectionSpec.CLEARTEXT);
 
+  /**
+   * ConnectionPool是直接new出来的，而它的各种操作却在OkHttpClient的static区实现了Internal.instance接口作为ConnectionPool的包装。
+
+   至于为什么需要这么多此一举的分层包装，主要是为了让外部包的成员访问非public方
+   */
   static {
     Internal.instance = new Internal() {
       @Override public void addLenient(Headers.Builder builder, String line) {
@@ -134,6 +141,7 @@ public class OkHttpClient implements Cloneable, Call.Factory {
   private CertificatePinner certificatePinner;
   private Authenticator proxyAuthenticator;
   private Authenticator authenticator;
+  // 初始化的时候，就已经自动创建了一个连接池
   private ConnectionPool connectionPool = new ConnectionPool();
   private Dns dns;
   private boolean followSslRedirects = true;

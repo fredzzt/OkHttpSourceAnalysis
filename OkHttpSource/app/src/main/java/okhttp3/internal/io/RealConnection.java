@@ -89,6 +89,9 @@ public final class RealConnection implements Connection {
   public int successCount;
   public BufferedSource source;
   public BufferedSink sink;
+  //List中Allocation的数量也就是物理socket被引用的计数（Refference Count），
+  // 如果计数为0的话，说明此连接没有被使用，是空闲的，需要通过下文的算法实现回收；
+  // 如果上层代码仍然引用，就不需要关闭连接。
   public final List<Reference<StreamAllocation>> allocations = new ArrayList<>();
   public boolean noNewStreams;
   public long idleAtNanos = Long.MAX_VALUE;

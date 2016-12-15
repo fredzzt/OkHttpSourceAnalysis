@@ -218,7 +218,7 @@ public final class Cache {
 
   private CacheRequest put(Response response) throws IOException {
     String requestMethod = response.request().method();
-    Dispatcher
+
     if (HttpMethod.invalidatesCache(response.request().method())) {
       try {
         remove(response.request());

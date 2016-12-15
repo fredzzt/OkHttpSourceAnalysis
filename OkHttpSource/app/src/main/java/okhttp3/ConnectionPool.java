@@ -85,6 +85,7 @@ public final class ConnectionPool {
 
   //真是连接的线程队列
   private final Deque<RealConnection> connections = new ArrayDeque<>();
+  //维护着一个RouteDatabase，它用来记录连接失败的Route的黑名单，当连接失败的时候就会把失败的线路加进去（本文不讨论）
   final RouteDatabase routeDatabase = new RouteDatabase();
   boolean cleanupRunning;
 

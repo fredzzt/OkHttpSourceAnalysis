@@ -181,6 +181,7 @@ final class RealCall implements Call {
    * 拦截器
    * Interceptor本身的文档解释：观察，修改以及可能短路的请求输出和响应请求的回来。通常情况下拦截器用来添加，移除或者转换请求或者回应的头部信息。
    * 主要是针对Request和Response的切面处理。
+   * 不要误以为它只负责拦截请求进行一些额外的处理（例如 cookie），实际上它把实际的网络请求、缓存、透明压缩等功能都统一了起来
    * @param forWebSocket
    * @return
    * @throws IOException
