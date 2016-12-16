@@ -108,7 +108,9 @@ public class Platform {
     System.out.println(message);
   }
 
-  /** Attempt to match the host runtime to a capable Platform implementation. */
+  /** Attempt to match the host runtime to a capable Platform implementation.
+   * 找到与平台匹配
+   * */
   private static Platform findPlatform() {
     // Attempt to find Android 2.3+ APIs.
     try {
@@ -168,7 +170,9 @@ public class Platform {
     return new Platform();
   }
 
-  /** Android 2.3 or better. */
+  /** Android 2.3 or better.
+   * 针对android 平台进行封装
+   * */
   private static class Android extends Platform {
     private static final int MAX_LOG_LENGTH = 4000;
 
@@ -273,6 +277,7 @@ public class Platform {
 
   /**
    * OpenJDK 7+ with {@code org.mortbay.jetty.alpn/alpn-boot} in the boot class path.
+   * 针对JDK7 以上的平台适配
    */
   private static class JdkWithJettyBootPlatform extends Platform {
     private final Method putMethod;
