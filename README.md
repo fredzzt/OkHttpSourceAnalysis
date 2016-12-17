@@ -3,6 +3,7 @@ okhttp 源码分析
 ##源码分析
 * [okhttp 综述]
 * [okhttp 总体设计]
+* [okhttp 总体设计 UML]
 * [Socket管理(StreamAllocation)]
 * [HTTP请求序列化/反序列化]
 * [复用连接池]
