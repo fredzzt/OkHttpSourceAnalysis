@@ -6,6 +6,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.io.InputStream;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -14,6 +15,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okio.BufferedSource;
+import okio.Okio;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,7 +24,14 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        postAsynHttp();
+
+    }
+
+    public static void readString(InputStream in) throws IOException {
+        BufferedSource source = Okio.buffer(Okio.source(in));  //创建BufferedSource
+        String s = source.readUtf8();  //以UTF-8读
+        System.out.println(s);     //打印
+
     }
 
     private void postAsynHttp() {
