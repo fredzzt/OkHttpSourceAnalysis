@@ -18,10 +18,12 @@ package okio;
 /**
  * A collection of unused segments, necessary to avoid GC churn and zero-fill.
  * This pool is a thread-safe static singleton.
+ * 对闲置的块进行管理，通过一个块池（SegmentPool）的管理，避免系统GC和申请byte时的zero-fill
  */
 final class SegmentPool {
   /** The maximum number of bytes to pool. */
   // TODO: Is 64 KiB a good maximum size? Do we ever have that many idle segments?
+//  这是一个回收池，目前的设计是能存放64K的字节，即8个Segment。在实际使用中，建议对其进行调整。
   static final long MAX_SIZE = 64 * 1024; // 64 KiB.
 
   /** Singly-linked list of segments. */
@@ -33,6 +35,7 @@ final class SegmentPool {
   private SegmentPool() {
   }
 
+  //take()用于获取一个闲置Segment
   static Segment take() {
     synchronized (SegmentPool.class) {
       if (next != null) {
@@ -46,6 +49,7 @@ final class SegmentPool {
     return new Segment(); // Pool is empty. Don't zero-fill while holding a lock.
   }
 
+  //用于回收一个Segment。
   static void recycle(Segment segment) {
     if (segment.next != null || segment.prev != null) throw new IllegalArgumentException();
     if (segment.shared) return; // This segment cannot be recycled.

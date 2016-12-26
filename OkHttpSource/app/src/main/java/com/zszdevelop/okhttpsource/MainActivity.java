@@ -17,6 +17,9 @@ import okhttp3.RequestBody;
 import okhttp3.Response;
 import okio.BufferedSource;
 import okio.Okio;
+import retrofit2.Retrofit;
+import retrofit2.http.GET;
+import retrofit2.http.Path;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -24,6 +27,31 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        retrofitHttp();
+    }
+
+    private void retrofitHttp() {
+
+
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl("https://api.github.com/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        GitHubService service = retrofit.create(GitHubService.class);
+        Call<List<Repo>> repos = service.listRepos("octocat");
+        repos.enqueue(new Callback<List<Repo>>() {
+            @Override
+            public void onResponse(Call<List<Repo>> call, Response<List<Repo>> response) {
+
+            }
+            @Override
+            public void onFailure(Call<List<Repo>> call, Throwable t) {
+
+            }
+        });
+
 
     }
 
@@ -67,5 +95,16 @@ public class MainActivity extends AppCompatActivity {
 
 
         });
+    }
+
+    /**
+     * API的编写
+
+     我们已经new好了一个我们需要的Retrofit对象，那么下一步就是编写API了。如何编写API呢？Retrofit的方式是用过java interface和注解的方式进行定义。例如：
+     */
+    public interface GitHubService {
+        @GET("users/{user}/repos")
+        //通过Call<T>构建成一个interface。Call<T>这个接口分别在OkHttpCall和ExecutorCallbackCall中做了具体的实现。
+        Call<List<Repo>> listRepos(@Path("user") String user);
     }
 }

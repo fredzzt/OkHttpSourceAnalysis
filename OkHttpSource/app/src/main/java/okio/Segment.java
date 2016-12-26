@@ -29,9 +29,13 @@ package okio;
  * The lone exception is that the owner segment is allowed to append to the segment, writing data at
  * {@code limit} and beyond. There is a single owning segment for each byte array. Positions,
  * limits, prev, and next references are not shared.
+ * 对数据进行了分块处理，这样在大数据IO的时候可以以块为单位进行IO，这可以提高IO的吞吐率。
+ *对这些数据块使用链表进行管理，这可以仅通过移动“指针”就进行数据的管理，而不用真正去处理数据，而且对扩容来说也十分方便。
  */
 final class Segment {
-  /** The size of all segments in bytes. */
+  /** The size of all segments in bytes.
+   * 1kb
+   * */
   static final int SIZE = 8192;
 
   /** Segments will be shared when doing so avoids {@code arraycopy()} of this many bytes. */
