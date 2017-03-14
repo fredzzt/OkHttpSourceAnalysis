@@ -21,6 +21,8 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -145,6 +147,29 @@ public final class DiskLruCache implements Closeable {
   private final int valueCount;
   private long size = 0;
   private BufferedSink journalWriter;
+
+    /**
+     * Constructs a new {@code LinkedHashMap} instance with the specified
+     * capacity, load factor and a flag specifying the ordering behavior.
+     *
+     * @param initialCapacity
+     *            the initial capacity of this hash map.初始值
+     * @param loadFactor
+     *            the initial load factor.加载因子
+     * @param accessOrder
+     *            {@code true} if the ordering should be done based on the last
+     *            access (from least-recently accessed to most-recently
+     *            accessed),
+     *            and {@code false} if the ordering should be the
+     *            order in which the entries were inserted.
+     *
+     *            Relinks the given entry to the tail of the list. Under access ordering,
+     *            this method is invoked whenever the value of a  pre-existing entry is
+     *            read by Map.get or modified by Map.put. LRU算法
+     * @throws IllegalArgumentException
+     *             when the capacity is less than zero or the load factor is
+     *             less or equal to zero.
+     */
   private final LinkedHashMap<String, Entry> lruEntries = new LinkedHashMap<>(0, 0.75f, true);
   private int redundantOpCount;
   private boolean hasJournalErrors;
@@ -198,6 +223,10 @@ public final class DiskLruCache implements Closeable {
   }
 
   public synchronized void initialize() throws IOException {
+    // 在运行时，如果关闭了assertion功能，这些语句将不起任何作用。如果打开了assertion功能，
+    // 那么expression1的值将被计算，如果它的值为false，该语句强抛出一个AssertionError对象。
+    // 1. assert expression1;   2. assert expression1: expression2;
+    // expression1表示一个boolean表达式，expression2表示一个基本类型、表达式或者是一个Object，用于在失败时输出错误信息。
     assert Thread.holdsLock(this);
 
     if (initialized) {
@@ -253,7 +282,8 @@ public final class DiskLruCache implements Closeable {
 
     // Use a single background thread to evict entries.
 //    3.4 缓存的自动清理
-//    在DiskLruCache初始化时，将建立线程池，最少零个线程，最大一个线程，线程空闲可以活60s，线程名叫做"OkHttp DiskLruCache"，当JVM退出时，线程自动结束。
+//    在DiskLruCache初始化时，将建立线程池，最少零个线程，最大一个线程，线程空闲可以活60s，
+//    线程名叫做"OkHttp DiskLruCache"，当JVM退出时，线程自动结束。
     Executor executor = new ThreadPoolExecutor(0, 1, 60L, TimeUnit.SECONDS,
         new LinkedBlockingQueue<Runnable>(), Util.threadFactory("OkHttp DiskLruCache", true));
 
@@ -510,64 +540,64 @@ public final class DiskLruCache implements Closeable {
   }
 
   private synchronized void completeEdit(Editor editor, boolean success) throws IOException {
-    Entry entry = editor.entry;
-    if (entry.currentEditor != editor) {
-      throw new IllegalStateException();
-    }
-
-    // If this edit is creating the entry for the first time, every index must have a value.
-    if (success && !entry.readable) {
-      for (int i = 0; i < valueCount; i++) {
-        if (!editor.written[i]) {
-          editor.abort();
-          throw new IllegalStateException("Newly created entry didn't create value for index " + i);
+        Entry entry = editor.entry;
+        if (entry.currentEditor != editor) {
+            throw new IllegalStateException();
         }
-        if (!fileSystem.exists(entry.dirtyFiles[i])) {
-          editor.abort();
-          return;
+
+        // If this edit is creating the entry for the first time, every index must have a value.
+        if (success && !entry.readable) {
+            for (int i = 0; i < valueCount; i++) {
+                if (!editor.written[i]) {
+                    editor.abort();
+                    throw new IllegalStateException("Newly created entry didn't create value for index " + i);
+                }
+                if (!fileSystem.exists(entry.dirtyFiles[i])) {
+                    editor.abort();
+                    return;
+                }
+            }
         }
-      }
-    }
 
-    for (int i = 0; i < valueCount; i++) {
-      File dirty = entry.dirtyFiles[i];
-      if (success) {
-        if (fileSystem.exists(dirty)) {
-          File clean = entry.cleanFiles[i];
-          fileSystem.rename(dirty, clean);
-          long oldLength = entry.lengths[i];
-          long newLength = fileSystem.size(clean);
-          entry.lengths[i] = newLength;
-          size = size - oldLength + newLength;
+        for (int i = 0; i < valueCount; i++) {
+            File dirty = entry.dirtyFiles[i];
+            if (success) {
+                if (fileSystem.exists(dirty)) {
+                    File clean = entry.cleanFiles[i];
+                    fileSystem.rename(dirty, clean);
+                    long oldLength = entry.lengths[i];
+                    long newLength = fileSystem.size(clean);
+                    entry.lengths[i] = newLength;
+                    size = size - oldLength + newLength;
+                }
+            } else {
+                fileSystem.delete(dirty);
+            }
         }
-      } else {
-        fileSystem.delete(dirty);
-      }
-    }
 
-    redundantOpCount++;
-    entry.currentEditor = null;
-    if (entry.readable | success) {
-      entry.readable = true;
-      journalWriter.writeUtf8(CLEAN).writeByte(' ');
-      journalWriter.writeUtf8(entry.key);
-      entry.writeLengths(journalWriter);
-      journalWriter.writeByte('\n');
-      if (success) {
-        entry.sequenceNumber = nextSequenceNumber++;
-      }
-    } else {
-      lruEntries.remove(entry.key);
-      journalWriter.writeUtf8(REMOVE).writeByte(' ');
-      journalWriter.writeUtf8(entry.key);
-      journalWriter.writeByte('\n');
-    }
-    journalWriter.flush();
+        redundantOpCount++;
+        entry.currentEditor = null;
+        if (entry.readable | success) {
+            entry.readable = true;
+            journalWriter.writeUtf8(CLEAN).writeByte(' ');
+            journalWriter.writeUtf8(entry.key);
+            entry.writeLengths(journalWriter);
+            journalWriter.writeByte('\n');
+            if (success) {
+                entry.sequenceNumber = nextSequenceNumber++;
+            }
+        } else {
+            lruEntries.remove(entry.key);
+            journalWriter.writeUtf8(REMOVE).writeByte(' ');
+            journalWriter.writeUtf8(entry.key);
+            journalWriter.writeByte('\n');
+        }
+        journalWriter.flush();
 
-    if (size > maxSize || journalRebuildRequired()) {
-      executor.execute(cleanupRunnable);
+        if (size > maxSize || journalRebuildRequired()) {
+            executor.execute(cleanupRunnable);
+        }
     }
-  }
 
   /**
    * We only rebuild the journal when it will halve the size of the journal and eliminate at least

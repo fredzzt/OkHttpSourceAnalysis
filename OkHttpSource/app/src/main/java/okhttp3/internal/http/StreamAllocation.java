@@ -135,7 +135,7 @@ public final class StreamAllocation {
    * Finds a connection and returns it if it is healthy. If it is unhealthy the process is repeated
    * until a healthy connection is found.
    * 找到一个连接，并返回它，如果它是可用的。如果是不可用的过程是重复的
-   *直到找到一个健康的连接。
+   * 直到找到一个健康的连接。
    *
    *  连接socket链路
    */

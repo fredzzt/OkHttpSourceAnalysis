@@ -25,9 +25,9 @@ import okhttp3.Route;
  * a specific IP address or proxy server, that failure is remembered and alternate routes are
  * preferred.
  * 在创建一个新的连接到目标地址时，要避免的路由失败的黑名单。这是
- *使用，OkHttp可以从自己的错误中学习：如果有一个失败的尝试连接
- *一个特定的IP地址或代理服务器，失败是记住的，备用路由
- *优先。
+ * 使用，OkHttp可以从自己的错误中学习：如果有一个失败的尝试连接
+ * 一个特定的IP地址或代理服务器，失败是记住的，备用路由
+ * 优先。
  */
 public final class RouteDatabase {
   private final Set<Route> failedRoutes = new LinkedHashSet<>();

@@ -579,6 +579,7 @@ public class OkHttpClient implements Cloneable, Call.Factory {
    * 对网络请求 Request 进行封装，Call 是接口，真实的是 RealCall
    */
   @Override public Call newCall(Request request) {
+    //init RealCall
     return new RealCall(this, request);
   }
 
@@ -594,6 +595,7 @@ public class OkHttpClient implements Cloneable, Call.Factory {
   /**
    * Returns a shallow copy of this OkHttpClient that uses the system-wide default for each field
    * that hasn't been explicitly configured.
+   * init OkHttpClient
    */
   OkHttpClient copyWithDefaults() {
     OkHttpClient result = new OkHttpClient(this);

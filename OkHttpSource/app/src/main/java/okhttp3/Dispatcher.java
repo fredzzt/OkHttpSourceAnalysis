@@ -77,8 +77,9 @@ public final class Dispatcher {
   public Dispatcher() {
   }
 
+  // ExecutorService 消费者池（也就是线程池）
   // 使用如下构造了单例线程池
-//  参数说明如下：
+//  ConnectionPool 参数说明如下：
 //  int corePoolSize: 最小并发线程数，这里并发同时，如果是0的话包括空闲与活动的线程，空闲一段时间后所有线程将全部被销毁。
 //  int maximumPoolSize: 最大线程数，当任务进来时可以扩充的线程最大值，当大于了这个值就会根据丢弃处理机制来处理
 //  long keepAliveTime: 当线程数大于corePoolSize时，多余的空闲线程的最大存活时间，类似于HTTP中的Keep-alive
@@ -87,11 +88,23 @@ public final class Dispatcher {
 //  ThreadFactory threadFactory: 单个线程的工厂，可以打Log，设置Daemon(即当JVM退出时，线程自动结束)等
   public synchronized ExecutorService getExecutorService() {
     if (executorService == null) {
+      /*其中比较容易让人误解的是：corePoolSize，maximumPoolSize，workQueue之间关系。
+
+        1.当线程池小于corePoolSize时，新提交任务将创建一个新线程执行任务，即使此时线程池中存在空闲线程。
+        2.当线程池达到corePoolSize时，新提交任务将被放入workQueue中，等待线程池中任务调度执行
+        3.当workQueue已满，且maximumPoolSize>corePoolSize时，新提交任务会创建新线程执行任务
+        4.当提交任务数超过maximumPoolSize时，新提交任务由RejectedExecutionHandler处理
+        5.当线程池中超过corePoolSize线程，空闲时间达到keepAliveTime时，关闭空闲线程
+        6.当设置allowCoreThreadTimeOut(true)时，线程池中corePoolSize线程空闲时间达到keepAliveTime也将关闭
+        http://825635381.iteye.com/blog/2184680
+        */
       executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60, TimeUnit.SECONDS,
           new SynchronousQueue<Runnable>(), Util.threadFactory("OkHttp Dispatcher", false));
-      //可以看出，在Okhttp中，构建了一个阀值为[0, Integer.MAX_VALUE]的线程池，它不保留任何最小线程数，随时创建更多的线程数，当线程空闲时只能活60秒，它使用了一个不存储元素的阻塞工作队列，一个叫做"OkHttp Dispatcher"的线程工厂。
+      // 可以看出，在Okhttp中，构建了一个阀值为[0, Integer.MAX_VALUE]的线程池，它不保留任何最小线程数，随时创建更多的线程数，
+      // 当线程空闲时只能活60秒，它使用了一个不存储元素的阻塞工作队列，一个叫做"OkHttp Dispatcher"的线程工厂。
 //      也就是说，在实际运行中，当收到10个并发请求时，线程池会创建十个线程，当工作完成后，线程池会在60s后相继关闭所有线程。
-//      在RxJava的Schedulers.io()中，也有类似的设计，最小的线程数量控制，不设上限的最大线程，以保证I/O任务中高阻塞低占用的过程中，不会长时间卡在阻塞上，有兴趣的可以分析RxJava中4种不同场景的Schedulers
+//      在RxJava的Schedulers.io()中，也有类似的设计，最小的线程数量控制，不设上限的最大线程，以保证I/O任务中高阻塞低占用的过程中，
+//      不会长时间卡在阻塞上，有兴趣的可以分析RxJava中4种不同场景的Schedulers
 
     }
     return executorService;
@@ -175,7 +188,7 @@ public final class Dispatcher {
   }
 
   /** Used by {@code AsyncCall#run} to signal completion. */
-  // 当asyncCall 无论成功还是失败都会回调这
+  // RealCall.execute() 当asyncCall 无论成功还是失败都会回调这
   synchronized void finished(AsyncCall call) {
     if (!runningCalls.remove(call)) throw new AssertionError("AsyncCall wasn't running!");
     promoteCalls();

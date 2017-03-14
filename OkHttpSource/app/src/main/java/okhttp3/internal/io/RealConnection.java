@@ -177,7 +177,7 @@ public final class RealConnection implements Connection {
       framedConnection.sendConnectionPreface();
 
       // Only assign the framed connection once the preface has been sent successfully.
-      //构造HttpStream并维护刚刚的socket连接，管道建立完成
+      // 构造HttpStream并维护刚刚的socket连接，管道建立完成
       this.framedConnection = framedConnection;
     }
   }

@@ -213,9 +213,9 @@ final class RealCall implements Call {
 
     @Override public Response proceed(Request request) throws IOException {
       // If there's another interceptor in the chain, call that.
-      //自增递归(recursive)调用Chain.process()，直到interceptors().size()中的拦截器全部调用完。
+      // 自增递归(recursive)调用Chain.process()，直到interceptors().size()中的拦截器全部调用完。
       // 主要做了两件事：
-      //递归调用Interceptors，依次入栈对response进行处理
+      // 递归调用Interceptors，依次入栈对response进行处理
       // 当全部递归出栈完成后，移交给网络模块(getResponse)
       if (index < client.interceptors().size()) {
 
@@ -271,7 +271,7 @@ final class RealCall implements Call {
     }
 
     // Create the initial HTTP engine. Retries and redirects need new engine for each attempt.
-    //创建初始HTTP引擎。重试次数和每次尝试重定向需要新的发动机。
+    // 创建初始HTTP引擎。重试次数和每次尝试重定向需要新的发动机。
     engine = new HttpEngine(client, request, false, false, forWebSocket, null, null, null);
 
     int followUpCount = 0;

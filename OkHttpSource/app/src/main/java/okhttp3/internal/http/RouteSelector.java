@@ -92,7 +92,7 @@ public final class RouteSelector {
      */
   public Route next() throws IOException {
     // Compute the next route to attempt.
-    if (!hasNextInetSocketAddress()) {//缓存中的lastInetSocketAddress为空
+    if (!hasNextInetSocketAddress()) {  //缓存中的lastInetSocketAddress为空
       if (!hasNextProxy()) {
         if (!hasNextPostponed()) {
           throw new NoSuchElementException();

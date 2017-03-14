@@ -597,9 +597,11 @@ public final class Cache {
       this.handshake = response.handshake();
     }
 
+    //写http报文到缓存
     public void writeTo(DiskLruCache.Editor editor) throws IOException {
       BufferedSink sink = Okio.buffer(editor.newSink(ENTRY_METADATA));
 
+      //Header
       sink.writeUtf8(url);
       sink.writeByte('\n');
       sink.writeUtf8(requestMethod);
