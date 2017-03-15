@@ -987,10 +987,15 @@ public final class DiskLruCache implements Closeable {
       StringBuilder fileBuilder = new StringBuilder(key).append('.');
       int truncateTo = fileBuilder.length();
       for (int i = 0; i < valueCount; i++) {
+          //create cleanFiles
         fileBuilder.append(i);
         cleanFiles[i] = new File(directory, fileBuilder.toString());
+          //create dirtyFiles
         fileBuilder.append(".tmp");
         dirtyFiles[i] = new File(directory, fileBuilder.toString());
+          /*If the new length is larger than
+           * the current length, then the new characters at the end of this object
+           * will contain the {@code char} value of {@code \u0000}. */
         fileBuilder.setLength(truncateTo);
       }
     }
